@@ -5,8 +5,8 @@
 //  in supabase/schema.sql decide who can read and write.
 // ─────────────────────────────────────────────────────────────
 window.EXPEDITE_CONFIG = {
-  SUPABASE_URL: "https://YOUR-PROJECT-REF.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR-ANON-PUBLIC-KEY",
+  SUPABASE_URL: "https://abitsztwgdwcmiqkjswd.supabase.co.",
+  SUPABASE_ANON_KEY: "sb_publishable_ukUyWccCejchxDWu9G6C0Q_kSeKcmmH",
 
   // Only people with this email domain can sign in.
   // Must match the domain in supabase/schema.sql.
