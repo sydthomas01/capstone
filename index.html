@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Expedite Request Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <section class="card setup" id="setupCard" hidden>
+    <h2>Finish setup</h2>
+    <p>This site isn't connected to a database yet. Open <code>config.js</code> and paste in your Supabase project URL and anon public key, then reload. The README has step-by-step instructions.</p>
+  </section>
+
+  <section class="card authcard" id="authCard" hidden aria-labelledby="authTitle">
+    <h1 id="authTitle">Expedite Request Dashboard</h1>
+    <p class="hint">Sign in with your company email to log and view expedite requests.</p>
+    <button class="btn ghost" id="msBtn" type="button" hidden>Sign in with Microsoft</button>
+    <form id="authForm" class="fgrid" style="grid-template-columns:1fr;margin:0" novalidate>
+      <div class="f"><label for="aEmail">Company email</label><input type="email" id="aEmail" autocomplete="email" required></div>
+      <div class="f"><label for="aPass">Password</label><input type="password" id="aPass" autocomplete="current-password" minlength="8" required></div>
+      <div class="authrow">
+        <button class="btn" type="submit" id="signInBtn">Sign in</button>
+        <button class="btn ghost" type="button" id="signUpBtn">Create account</button>
+      </div>
+      <span class="err" id="authErr" role="alert"></span>
+    </form>
+  </section>
+
+  <div id="app" hidden style="display:grid;gap:16px">
+  <header>
+    <div>
+      <h1>Expedite Request Dashboard</h1>
+      <p class="sub">Requests from Ops to Prefab: why they happen, how they come in, and what they cost.</p>
+    </div>
+    <div class="load">
+      <span id="srcPill" class="pill">Connecting…</span>
+      <button class="btn" id="newBtn" type="button" disabled>+ New request</button>
+      <button class="btn ghost" id="exportBtn" type="button">Export CSV</button>
+      <span class="who" id="who"></span>
+      <button class="btn ghost sm" id="signOut" type="button">Sign out</button>
+    </div>
+  </header>
+  <p class="status" id="status" role="status"></p>
+  <div class="notice" id="roNote" hidden></div>
+
+  <section class="card formcard" id="formCard" hidden aria-labelledby="formTitle">
+    <h2 id="formTitle">New expedite request</h2>
+    <p class="hint">Fields marked <span class="req">*</span> are required. Saved requests show up for everyone with access.</p>
+    <form id="reqForm" novalidate>
+      <div class="fgrid">
+        <div class="sect">Project</div>
+        <div class="f"><label for="iId">Request ID <span class="req">*</span></label><input id="iId" required></div>
+        <div class="f"><label for="iProject">Project <span class="req">*</span></label><select id="iProject" required></select></div>
+        <div class="f"><label>PM</label><div class="calc" id="iPM">—</div></div>
+        <div class="newproj" id="newProj" hidden>
+          <div class="f"><label for="nPid">New project ID <span class="req">*</span></label><input id="nPid"></div>
+          <div class="f"><label for="nName">Project name <span class="req">*</span></label><input id="nName"></div>
+          <div class="f"><label for="nPM">PM <span class="req">*</span></label><input id="nPM"></div>
+        </div>
+        <div class="f"><label for="iBy">Requested by (Ops)</label><input id="iBy"></div>
+        <div class="f"><label for="iOf">Requested of (Prefab)</label><input id="iOf"></div>
+
+        <div class="sect">Dates</div>
+        <div class="f"><label for="iReq">Date requested <span class="req">*</span></label><input type="date" id="iReq" required></div>
+        <div class="f"><label for="iOrig">Original on-site date</label><input type="date" id="iOrig"></div>
+        <div class="f"><label for="iExp">Expedited on-site date</label><input type="date" id="iExp"></div>
+        <div class="f"><label>Days pulled in · Days of notice</label><div class="calc" id="iCalc">—</div></div>
+
+        <div class="sect">Why and how</div>
+        <div class="f"><label for="iReason">Reason for expedite <span class="req">*</span></label><select id="iReason" required></select></div>
+        <div class="f"><label for="iSource">Date source used</label><select id="iSource"></select></div>
+        <div class="f"><label for="iComm">How communicated</label><select id="iComm"></select></div>
+
+        <div class="sect">Approval and cost</div>
+        <div class="f"><label for="iApproved">Approved?</label><select id="iApproved"></select></div>
+        <div class="f"><label for="iApprovedBy">Approved by</label><input id="iApprovedBy"></div>
+        <div class="f"><label for="iExpedited">Expedited?</label><select id="iExpedited"></select></div>
+        <div class="f"><label for="iCost">Expedite cost ($)</label><input type="number" id="iCost" min="0" step="1" inputmode="decimal"></div>
+        <div class="f full"><label for="iNotes">Notes</label><textarea id="iNotes"></textarea></div>
+      </div>
+      <div class="factions">
+        <button class="btn" type="submit" id="saveBtn">Save request</button>
+        <button class="btn ghost" type="button" id="cancelBtn">Cancel</button>
+        <span class="err" id="formErr" role="alert"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="filters" aria-label="Filters">
+    <div class="f"><label for="fProject">Project</label><select id="fProject"></select></div>
+    <div class="f"><label for="fPM">PM</label><select id="fPM"></select></div>
+    <div class="f"><label for="fReason">Reason</label><select id="fReason"></select></div>
+    <div class="f"><label for="fApproved">Approved?</label><select id="fApproved"></select></div>
+    <div class="f"><label for="fFrom">Requested from</label><input type="date" id="fFrom"></div>
+    <div class="f"><label for="fTo">to</label><input type="date" id="fTo"></div>
+    <button class="btn ghost" id="reset" type="button">Reset filters</button>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="grid">
+    <div class="card"><h2>Requests by reason</h2><p class="hint">Click a bar to filter. The longest bar is the category to tackle first.</p><div class="chart" id="cReason"></div></div>
+    <div class="card"><h2>Expedite cost by reason</h2><p class="hint">Total fees in dollars.</p><div class="chart" id="cCost"></div></div>
+    <div class="card wide"><h2>Requests per week</h2><p class="hint">By date requested.</p><div class="chart" id="cTime"></div></div>
+    <div class="card"><h2>How requests came in</h2><p class="hint">Teams, email, text, call or meeting. No formal channel exists yet.</p><div class="chart" id="cComm"></div></div>
+    <div class="card"><h2>Date source used</h2><p class="hint">Which date the request was planned against: PM, PX or Hub.</p><div class="chart" id="cSrc"></div></div>
+    <div class="card"><h2>Requests by project</h2><p class="hint">Click a bar to filter.</p><div class="chart" id="cProj"></div></div>
+    <div class="card"><h2>Days of notice</h2><p class="hint">Time between the request and the new on-site date. Under 7 days is short notice.</p><div class="chart" id="cNotice"></div></div>
+  </section>
+
+  <section class="card">
+    <h2>Request log</h2><p class="hint">Newest first. Click a column heading to sort. Use Edit to fix or update a request.</p>
+    <div class="tablewrap"><table id="log"><thead></thead><tbody></tbody></table></div>
+  </section>
+  <footer>Requests are saved to the shared Supabase database and visible to everyone signed in with a company email. Days pulled in = original on-site date minus expedited on-site date.</footer>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
